@@ -7,5 +7,5 @@ pip install -r requirements.txt
 ```
 To run the app please run the following:
 ```
-python main.py
+streamlit run main.py
 ```
