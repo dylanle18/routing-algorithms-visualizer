@@ -1,3 +1,5 @@
 Documentation:
 - https://graphviz.org/docs/edges/
 - https://graphviz.org/doc/info/shapes.html
+- https://graphviz.org/doc/info/colors.html
+- https://streamlit-emoji-shortcodes-streamlit-app-gwckff.streamlit.app/
