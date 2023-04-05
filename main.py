@@ -42,7 +42,6 @@ def render_settings(graph : Graph):
     if algo == "Dijkstra's":
         # TODO: use Dijkstra
         cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
-        print(start, end)
 
     return cost, path, s, e
 
