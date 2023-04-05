@@ -54,6 +54,17 @@ class Graph:
                 immediate_neighbors.append(edge.n1)
         return immediate_neighbors
 
+    def to_dict(self) -> dict:
+        graph = {}
+        for edge in self.edges:
+            if edge.n1 not in graph:
+                graph[edge.n1] = {}
+            if edge.n2 not in graph:
+                graph[edge.n2] = {}
+            graph[edge.n1][edge.n2] = edge.cost
+            graph[edge.n2][edge.n1] = edge.cost
+        return graph
+
     def get_shortest_path_DV(self, start_node: str, end_node: str):
         # Initialize distance vector for each node
         distance_vectors: dict[str, dict[str, float]] = {}
