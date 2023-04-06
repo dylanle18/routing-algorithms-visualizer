@@ -21,7 +21,7 @@ def render_settings(graph : Graph):
     # check if start and end are not the same
     if start == end and start != 'Select Node':
         st.warning("Please select different start and end nodes")
-        return None,None,None,None,None,None,None
+        return None,None,None,None,None,None
 
     s = None
     e = None
@@ -34,15 +34,14 @@ def render_settings(graph : Graph):
 
     algo = st.selectbox("Select Algorithm to run", ["Select Algorithm", "Dijkstra's", "DVR"], 0)
     if algo == "Select Algorithm":
-        return None, None, s, e, None, None, None
+        return None, None, s, e, None, None
 
     cost = 0
     path = []
-    table1 = None
-    table2 = None
+    table = None
 
     if algo == 'DVR' and s and e:
-        cost, path, table1 = graph.get_shortest_path_DV(start_node=s, end_node=e)
+        cost, path, table = graph.get_shortest_path_DV(start_node=s, end_node=e)
 
     elif algo == "Dijkstra's":
         cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
@@ -50,11 +49,11 @@ def render_settings(graph : Graph):
         dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo'])
         dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo'])
 
-        table2 = pd.concat([dataFrame1, dataFrame2]).set_index('Letter')
+        table = pd.concat([dataFrame1, dataFrame2]).set_index('Letter')
     else:
         algo = None
 
-    return cost, path, s, e, table1, table2, algo
+    return cost, path, s, e, table, algo
 
 
 
@@ -91,13 +90,13 @@ graph_values = render_customization()
 graph = Graph()
 graph.create_graph_from_df(graph_values)
 
-cost, path_list, s_node, e_node, table1, table2, algo = None, None, None, None, None, None, None
+cost, path_list, s_node, e_node, table, algo = None, None, None, None, None, None
 
 if graph.is_empty:
     st.warning("Your Graph is empty. Please fill it first")
 
 with st.sidebar:
-    cost, path_list, s_node, e_node, table1, table2, algo = render_settings(graph)
+    cost, path_list, s_node, e_node, table, algo = render_settings(graph)
 
 graph_visual = gv.Graph()
 graph_visual.attr(rankdir='LR')
@@ -178,8 +177,5 @@ if path_list:
     st.write(f'Path is `{path_list_str}`'.format(path_list_str))
 
 
-if type(table1) == pd.DataFrame:
-    st.write(table1)
-
-if type(table2) == pd.DataFrame:
-    st.write(table2)
+if type(table) == pd.DataFrame:
+    st.write(table)
