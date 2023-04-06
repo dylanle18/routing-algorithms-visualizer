@@ -47,6 +47,10 @@ def render_settings(graph : Graph):
     elif algo == "Dijkstra's":
         cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
 
+        dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo'])
+        dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo'])
+
+        table2 = pd.concat([dataFrame1, dataFrame2]).set_index('Letter')
     else:
         algo = None
 
@@ -61,30 +65,11 @@ def render_customization():
         'Cost' : [100.0,200.0,300.0,400.0,600.0,700.0,800.0]
     }
 
-    empty_graph = {
-        'N1' : ['A','A','B','B','C','C','E'],
-        'N2' : ['B','C','C','D','D','F','F'],
-        'Cost' : [100.0,200.0,300.0,400.0,600.0,700.0,800.0]
-    }
-
     st.subheader('Set Graph Values')
 
     # col1, col2 = st.columns([1, 5])
 
     graph_values = pd.DataFrame(default_graph)
-
-    # TODO: Fix issue with states in the buttons
-    # with col1:
-    #     if st.button('Reset Graph'):
-    #         graph_values = pd.DataFrame({
-    #             'N1' : pd.Series(dtype='str'),
-    #             'N2' : pd.Series(dtype='str'),
-    #             'Cost' : pd.Series(dtype='float')
-    #         })
-
-    # with col2:
-    #     if st.button('Set Graph to Default Example'):
-    #         graph_values = pd.DataFrame(default_graph)
 
     graph_values = graph_values.reset_index(drop=True)
     graph_values = st.experimental_data_editor(graph_values, num_rows="dynamic", use_container_width=True)
@@ -168,11 +153,14 @@ if path_list:
 if not graph.is_empty:
     graph_visual.attr('node', color='gray')
     graph_visual.attr('node', shape='oval')
+
+    color = 'darkorange3' if algo == "Dijkstra's" else 'darkseagreen4'
+
     for edge in graph.edges:
         if edge.n1 in path and path[edge.n1] == edge.n2:
-            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='forward', color='darkseagreen4', penwidth='2', arrowsize='1.5')
+            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='forward', color=color, penwidth='2', arrowsize='1.5')
         elif edge.n2 in path and path[edge.n2] == edge.n1:
-            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='back', color='darkseagreen4', penwidth='2', arrowsize='1.5')
+            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='back', color=color, penwidth='2', arrowsize='1.5')
         else:
             graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost))
     st.graphviz_chart(graph_visual)
@@ -192,3 +180,6 @@ if path_list:
 
 if type(table1) == pd.DataFrame:
     st.write(table1)
+
+if type(table2) == pd.DataFrame:
+    st.write(table2)
