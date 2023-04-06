@@ -69,7 +69,7 @@ def render_customization():
 
     st.subheader('Set Graph Values')
 
-    col1, col2 = st.columns([1, 5])
+    # col1, col2 = st.columns([1, 5])
 
     graph_values = pd.DataFrame(default_graph)
 
