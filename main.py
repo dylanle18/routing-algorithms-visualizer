@@ -49,7 +49,7 @@ def render_settings(graph : Graph):
         dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo'])
         dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo'])
 
-        table = pd.concat([dataFrame1, dataFrame2]).set_index('Letter')
+        table = pd.merge(dataFrame1, dataFrame2, on='Letter', how='outer').set_index('Letter')
     else:
         algo = None
 
