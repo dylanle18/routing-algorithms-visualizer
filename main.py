@@ -36,11 +36,13 @@ def render_settings(graph : Graph):
     if algo == "Select Algorithm":
         return None, None, s, e
 
-    if algo == 'DVR':
-        cost, path = graph.get_shortest_path_DV(start_node=start[0], end_node=end[0])
+    cost = 0
+    path = []
+
+    if algo == 'DVR' and s and e:
+        cost, path = graph.get_shortest_path_DV(start_node=s, end_node=e)
 
     if algo == "Dijkstra's":
-        # TODO: use Dijkstra
         cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
 
     return cost, path, s, e
@@ -54,31 +56,41 @@ def render_customization():
         'Cost' : [100.0,200.0,300.0,400.0,600.0,700.0,800.0]
     }
 
+    empty_graph = {
+        'N1' : ['A','A','B','B','C','C','E'],
+        'N2' : ['B','C','C','D','D','F','F'],
+        'Cost' : [100.0,200.0,300.0,400.0,600.0,700.0,800.0]
+    }
+
     st.subheader('Set Graph Values')
 
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        if st.button('Set Graph to Default Example'):
-            graph_values = pd.DataFrame(default_graph)
+    col1, col2 = st.columns([1, 5])
 
     graph_values = pd.DataFrame(default_graph)
 
-    with col2:
-        if st.button('Reset Graph'):
-            graph_values = pd.DataFrame({
-                'N1' : pd.Series(dtype='str'),
-                'N2' : pd.Series(dtype='str'),
-                'Cost' : pd.Series(dtype='float')
-            })
+    # TODO: Fix issue with states in the buttons
+    # with col1:
+    #     if st.button('Reset Graph'):
+    #         graph_values = pd.DataFrame({
+    #             'N1' : pd.Series(dtype='str'),
+    #             'N2' : pd.Series(dtype='str'),
+    #             'Cost' : pd.Series(dtype='float')
+    #         })
+
+    # with col2:
+    #     if st.button('Set Graph to Default Example'):
+    #         graph_values = pd.DataFrame(default_graph)
 
     graph_values = graph_values.reset_index(drop=True)
     graph_values = st.experimental_data_editor(graph_values, num_rows="dynamic", use_container_width=True)
+
     graph_values = graph_values.replace('', float('NaN'))
     graph_values.dropna(how='any', inplace=True)
 
     st.text("Note that you can delete a row by selecting it and pressing 'DELETE'")
 
     return graph_values
+
 
 
 # Main app
