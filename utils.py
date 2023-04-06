@@ -122,4 +122,9 @@ class Graph:
         # Get total cost from distance vector
         total_cost = distance_vectors[start_node][end_node]
 
-        return total_cost, shortest_path
+        # Convert distance vector table to pandas DataFrame
+        dv = pd.DataFrame.from_dict(distance_vectors, orient='index')
+
+        dv = dv.apply(lambda x: pd.Series(x))
+
+        return total_cost, shortest_path, dv

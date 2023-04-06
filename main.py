@@ -12,7 +12,7 @@ def render_settings(graph : Graph):
 
     if graph.is_empty:
         st.warning("Empty Graph")
-        return None,None,None,None
+        return None,None,None,None,None,None,None
 
     # select start and end nodes
     start = st.selectbox("Select start node :red_circle:", ['Select Node']+nodes, 0)
@@ -21,7 +21,7 @@ def render_settings(graph : Graph):
     # check if start and end are not the same
     if start == end and start != 'Select Node':
         st.warning("Please select different start and end nodes")
-        return None,None,None,None
+        return None,None,None,None,None,None,None
 
     s = None
     e = None
@@ -34,18 +34,23 @@ def render_settings(graph : Graph):
 
     algo = st.selectbox("Select Algorithm to run", ["Select Algorithm", "Dijkstra's", "DVR"], 0)
     if algo == "Select Algorithm":
-        return None, None, s, e
+        return None, None, s, e, None, None, None
 
     cost = 0
     path = []
+    table1 = None
+    table2 = None
 
     if algo == 'DVR' and s and e:
-        cost, path = graph.get_shortest_path_DV(start_node=s, end_node=e)
+        cost, path, table1 = graph.get_shortest_path_DV(start_node=s, end_node=e)
 
-    if algo == "Dijkstra's":
+    elif algo == "Dijkstra's":
         cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
 
-    return cost, path, s, e
+    else:
+        algo = None
+
+    return cost, path, s, e, table1, table2, algo
 
 
 
@@ -101,13 +106,13 @@ graph_values = render_customization()
 graph = Graph()
 graph.create_graph_from_df(graph_values)
 
-cost, path_list, s_node, e_node = None, None, None, None
+cost, path_list, s_node, e_node, table1, table2, algo = None, None, None, None, None, None, None
 
 if graph.is_empty:
     st.warning("Your Graph is empty. Please fill it first")
 
 with st.sidebar:
-    cost, path_list, s_node, e_node = render_settings(graph)
+    cost, path_list, s_node, e_node, table1, table2, algo = render_settings(graph)
 
 graph_visual = gv.Graph()
 graph_visual.attr(rankdir='LR')
@@ -183,3 +188,7 @@ if path_list:
     path_list_str = path_list_str[:-2]
     path_list_str += ']'
     st.write(f'Path is `{path_list_str}`'.format(path_list_str))
+
+
+if type(table1) == pd.DataFrame:
+    st.write(table1)
