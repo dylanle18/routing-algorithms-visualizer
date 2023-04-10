@@ -33,6 +33,13 @@ def render_settings(graph : Graph):
     if end != 'Select Node':
         e = end
 
+    if start == 'Select Node' and end == 'Select Node':
+        return None,None,None,None,None,None
+    elif start == 'Select Node':
+        return None,None,None,e,None,None
+    elif end == 'Select Node':
+        return None,None,s,None,None,None
+
     algo = st.selectbox("Select Algorithm to run", ["Select Algorithm", "Dijkstra's", "DVR"], 0)
     if algo == "Select Algorithm":
         return None, None, s, e, None, None
