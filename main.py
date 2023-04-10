@@ -9,10 +9,11 @@ def render_settings(graph : Graph):
 
     # get nodes for selection
     nodes = graph.nodes
+    nodes.sort()
 
     if graph.is_empty:
         st.warning("Empty Graph")
-        return None,None,None,None,None,None,None
+        return None,None,None,None,None,None
 
     # select start and end nodes
     start = st.selectbox("Select start node :red_circle:", ['Select Node']+nodes, 0)
@@ -92,12 +93,16 @@ graph.create_graph_from_df(graph_values)
 
 cost, path_list, s_node, e_node, table, algo = None, None, None, None, None, None
 
-if graph.is_empty:
-    st.warning("Your Graph is empty. Please fill it first")
-
 with st.sidebar:
     cost, path_list, s_node, e_node, table, algo = render_settings(graph)
 
+if graph.is_empty:
+    st.warning("Your Graph is empty. Please fill it first")
+    exit()
+
+
+
+# Graph Nodes
 graph_visual = gv.Graph()
 graph_visual.attr(rankdir='LR')
 
@@ -149,20 +154,19 @@ if path_list:
 
 
 # Render graph
-if not graph.is_empty:
-    graph_visual.attr('node', color='gray')
-    graph_visual.attr('node', shape='oval')
+graph_visual.attr('node', color='gray')
+graph_visual.attr('node', shape='oval')
 
-    color = 'darkorange3' if algo == "Dijkstra's" else 'darkseagreen4'
+color = 'darkorange3' if algo == "Dijkstra's" else 'darkseagreen4'
 
-    for edge in graph.edges:
-        if edge.n1 in path and path[edge.n1] == edge.n2:
-            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='forward', color=color, penwidth='2', arrowsize='1.5')
-        elif edge.n2 in path and path[edge.n2] == edge.n1:
-            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='back', color=color, penwidth='2', arrowsize='1.5')
-        else:
-            graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost))
-    st.graphviz_chart(graph_visual)
+for edge in graph.edges:
+    if edge.n1 in path and path[edge.n1] == edge.n2:
+        graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='forward', color=color, penwidth='2', arrowsize='1.5')
+    elif edge.n2 in path and path[edge.n2] == edge.n1:
+        graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='back', color=color, penwidth='2', arrowsize='1.5')
+    else:
+        graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost))
+st.graphviz_chart(graph_visual)
 
 
 
