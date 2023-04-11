@@ -29,10 +29,10 @@ def dijkstra(graph : Graph, start):
         dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo']).replace(float('inf'), "∞")
         dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo']).replace(float('inf'), "∞")
         history.append(pd.merge(dataFrame1, dataFrame2, on='Letter', how='outer').set_index('Letter'))
-        historyStr.append("Visited [" + ", ".join(sorted(visited)) + "]. " + \
-                          "Unvisited [" + ", ".join(sorted(set(graph.nodes) - visited)) + "].  \n" + \
-                          "Visiting [" + curr_node + "]. " + \
-                          "Checking unvisited neighbors [" + ", ".join(sorted(set(graph.get_immediate_neighbor_nodes(curr_node)) - visited)) + "].")
+        historyStr.append("Visited `[" + ", ".join(sorted(visited)) + "]`. " + \
+                          "Unvisited `[" + ", ".join(sorted(set(graph.nodes) - visited)) + "]`.  \n" + \
+                          "Visiting `[" + curr_node + "]`. " + \
+                          "Checking unvisited neighbors `[" + ", ".join(sorted(set(graph.get_immediate_neighbor_nodes(curr_node)) - visited)) + "]`.")
 
         # if the node has already been visited, skip it
         if curr_node in visited:
