@@ -13,7 +13,7 @@ def render_settings(graph : Graph):
 
     if graph.is_empty:
         st.warning("Empty Graph")
-        return None,None,None,None,None,None
+        return None,None,None,None,None,None,None
 
     # select start and end nodes
     start = st.selectbox("Select start node :red_circle:", ['Select Node']+nodes, 0)
@@ -22,7 +22,7 @@ def render_settings(graph : Graph):
     # check if start and end are not the same
     if start == end and start != 'Select Node':
         st.warning("Please select different start and end nodes")
-        return None,None,None,None,None,None
+        return None,None,None,None,None,None,None
 
     s = None
     e = None
@@ -34,25 +34,26 @@ def render_settings(graph : Graph):
         e = end
 
     if start == 'Select Node' and end == 'Select Node':
-        return None,None,None,None,None,None
+        return None,None,None,None,None,None,None
     elif start == 'Select Node':
-        return None,None,None,e,None,None
+        return None,None,None,e,None,None,None
     elif end == 'Select Node':
-        return None,None,s,None,None,None
+        return None,None,s,None,None,None,None
 
     algo = st.selectbox("Select Algorithm to run", ["Select Algorithm", "Dijkstra's", "DVR"], 0)
     if algo == "Select Algorithm":
-        return None, None, s, e, None, None
+        return None, None, s, e, None, None, None
 
     cost = 0
     path = []
     table = None
+    history = []
 
     if algo == 'DVR' and s and e:
-        cost, path, table = graph.get_shortest_path_DV(start_node=s, end_node=e)
+        cost, path, table, history = graph.get_shortest_path_DV(start_node=s, end_node=e)
 
     elif algo == "Dijkstra's":
-        cost, path, distTo, edgeTo = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
+        cost, path, distTo, edgeTo, history = dj.get_shortest_path_DJ(graph.to_dict(), start[0], end[0])
 
         dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo'])
         dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo'])
@@ -61,7 +62,7 @@ def render_settings(graph : Graph):
     else:
         algo = None
 
-    return cost, path, s, e, table, algo
+    return cost, path, s, e, table, algo, history
 
 
 
@@ -98,10 +99,10 @@ graph_values = render_customization()
 graph = Graph()
 graph.create_graph_from_df(graph_values)
 
-cost, path_list, s_node, e_node, table, algo = None, None, None, None, None, None
+cost, path_list, s_node, e_node, table, algo, history = None, None, None, None, None, None, None
 
 with st.sidebar:
-    cost, path_list, s_node, e_node, table, algo = render_settings(graph)
+    cost, path_list, s_node, e_node, table, algo, history = render_settings(graph)
 
 if graph.is_empty:
     st.warning("Your Graph is empty. Please fill it first")
@@ -129,9 +130,15 @@ st.subheader('The Resultant Graph')
 
 # Back and Next Buttons
 st.text('Press Back and Next to go through the path')
+stepTable = 0
+stepPath = 0
+stepMax = 0
 if 'step_number' in st.session_state:
     if path_list:
-        step_number = min(st.session_state['step_number'], len(path_list))
+        stepTable = len(history)
+        stepPath = len(path_list)
+        stepMax = stepTable + stepPath - 1
+        step_number = min(st.session_state['step_number'], stepMax)
     else:
         step_number = st.session_state['step_number']
 else:
@@ -142,7 +149,7 @@ with col1:
         step_number = max(step_number-1, 1)
 with col2:
     if st.button('Next', disabled=not path_list):
-        step_number = min(step_number+1, len(path_list))
+        step_number = min(step_number+1, stepMax)
 with col3:
     if path_list:
         st.write(f'Step {step_number-1}')
@@ -154,8 +161,8 @@ st.session_state['step_number'] = step_number
 
 # Generate path digraph
 path = {}
-if path_list:
-    for i in range(len(path_list[:step_number])-1):
+if path_list and step_number > stepTable:
+    for i in range(len(path_list[:step_number - stepTable + 1])-1):
         path[path_list[i]] = path_list[i+1]
 
 
@@ -167,9 +174,9 @@ graph_visual.attr('node', shape='oval')
 color = 'darkorange3' if algo == "Dijkstra's" else 'darkseagreen4'
 
 for edge in graph.edges:
-    if edge.n1 in path and path[edge.n1] == edge.n2:
+    if step_number > stepTable and edge.n1 in path and path[edge.n1] == edge.n2:
         graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='forward', color=color, penwidth='2', arrowsize='1.5')
-    elif edge.n2 in path and path[edge.n2] == edge.n1:
+    elif step_number > stepTable and edge.n2 in path and path[edge.n2] == edge.n1:
         graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost), dir='back', color=color, penwidth='2', arrowsize='1.5')
     else:
         graph_visual.edge(edge.n1, edge.n2, label=str(edge.cost))
@@ -189,4 +196,7 @@ if path_list:
 
 
 if type(table) == pd.DataFrame:
-    st.write(table)
+    if step_number <= stepTable:
+        st.write(history[step_number - 1])
+    else:
+        st.write(history[stepTable - 1])

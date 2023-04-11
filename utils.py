@@ -82,11 +82,36 @@ class Graph:
             distance_vectors[edge.n2][edge.n1] = edge.cost
 
         # Apply distance vector graph algorithm
-        for k in self.nodes:
-            for i in self.nodes:
-                for j in self.nodes:
-                    if distance_vectors[i][j] > distance_vectors[i][k] + distance_vectors[k][j]:
-                        distance_vectors[i][j] = distance_vectors[i][k] + distance_vectors[k][j]
+        # for k in self.nodes:
+        #     for i in self.nodes:
+        #         for j in self.nodes:
+        #             if distance_vectors[i][j] > distance_vectors[i][k] + distance_vectors[k][j]:
+        #                 distance_vectors[i][j] = distance_vectors[i][k] + distance_vectors[k][j]
+
+        # Apply distance vector graph algorithm
+        dvHistory = []
+        changed = True
+        while changed:
+            dvHistory.append(pd.DataFrame.from_dict(distance_vectors, orient='index').replace(float('inf'), "∞"))
+            changed = False
+
+            for tableNode in self.nodes:
+                # Get neighbors
+                neighborNodes = self.get_immediate_neighbor_nodes(tableNode)
+
+                # For each node
+                for columnNode in self.nodes:
+                    if tableNode == columnNode:
+                        continue
+                    
+                    # Get cost of tableNode->neighbor + neighbor->columNode
+                    neighborCost = [self.get_cost(tableNode,n) + distance_vectors[n][columnNode] for n in neighborNodes]
+                    minCost = min(neighborCost)
+
+                    # If less than current minCost, update
+                    if distance_vectors[tableNode][columnNode] > minCost:
+                        distance_vectors[tableNode][columnNode] = minCost
+                        changed = True
 
         # Extract shortest path from distance vectors
         shortest_path = [start_node]
@@ -127,4 +152,58 @@ class Graph:
 
         dv = dv.apply(lambda x: pd.Series(x))
 
-        return total_cost, shortest_path, dv
+        return total_cost, shortest_path, dv, dvHistory
+    
+
+def main():
+
+    # g = Graph([
+    #     Edge('A', 'B', 100),
+    #     Edge('A', 'C', 15000),
+    #     Edge('B', 'C', 300),
+    #     Edge('B', 'D', 400),
+    #     Edge('C', 'D', 80),
+    #     Edge('C', 'F', 700),
+    #     Edge('E', 'F', 10),
+    #     Edge('G', 'H', 9000),
+    #     Edge('I', 'J', 400),
+    #     Edge('K', 'L', 250),
+    #     Edge('K', 'I', 1000),
+    #     Edge('K', 'G', 1200),
+    #     Edge('J', 'A', 100),
+    #     Edge('H', 'A', 150),
+    #     Edge('L', 'D', 10000),
+    #     Edge('H', 'I', 4444),
+    #     Edge('C', 'K', 100000),
+    #     Edge('M', 'N', 800),
+    #     Edge('N', 'H', 20000),
+    #     Edge('M', 'L', 80000),
+    #     Edge('M', 'A', 5621)
+    # ])
+
+    g = Graph([
+        Edge('A', 'B', 100),
+        Edge('A', 'C', 200),
+        Edge('B', 'C', 300),
+        Edge('B', 'D', 400),
+        Edge('C', 'D', 600),
+        Edge('C', 'F', 700),
+        Edge('E', 'F', 800)
+    ])
+
+    print("Graph:")
+    graph = g.to_dict()
+    for k, v in graph.items():
+        print(k, v)
+    print()
+
+    totalCost, shortestPath, dv, history = g.get_shortest_path_DV('A', 'E')
+    print("start: A end: E")
+    print("cost:", totalCost)
+    print("shortestPath:", shortestPath)
+    print("dv:", dv)
+    for h in history:
+        print("history:\n", h)
+
+if __name__ == '__main__':
+    main()
