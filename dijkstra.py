@@ -3,9 +3,11 @@ import heapq
 from utils import Edge, Graph
 
 
-def dijkstra(graph, start):
+def dijkstra(graph : Graph, start):
+    graphDict = graph.to_dict()
+
     # initialize all distances to infinity except the starting node, which has distance 0
-    distTo = {node: float('inf') for node in graph}
+    distTo = {node: float('inf') for node in graphDict}
     distTo[start] = 0
 
     # initialize the priority queue with the starting node and its distance
@@ -17,15 +19,20 @@ def dijkstra(graph, start):
     # keep track of the shortest path to each node
     edgeTo = {}
     history = []
+    historyStr = []
 
     while pq:
+        # get the node with the shortest distance from the priority queue
+        (curr_dist, curr_node) = heapq.heappop(pq)
+
         # Add to history
         dataFrame1 = pd.DataFrame(list(distTo.items()), columns=['Letter', 'DistTo']).replace(float('inf'), "∞")
         dataFrame2 = pd.DataFrame(list(edgeTo.items()), columns=['Letter', 'EdgeTo']).replace(float('inf'), "∞")
         history.append(pd.merge(dataFrame1, dataFrame2, on='Letter', how='outer').set_index('Letter'))
-
-        # get the node with the shortest distance from the priority queue
-        (curr_dist, curr_node) = heapq.heappop(pq)
+        historyStr.append("Visited [" + ", ".join(sorted(visited)) + "]. " + \
+                          "Unvisited [" + ", ".join(sorted(set(graph.nodes) - visited)) + "].  \n" + \
+                          "Visiting [" + curr_node + "]. " + \
+                          "Checking unvisited neighbors [" + ", ".join(sorted(set(graph.get_immediate_neighbor_nodes(curr_node)) - visited)) + "].")
 
         # if the node has already been visited, skip it
         if curr_node in visited:
@@ -35,7 +42,7 @@ def dijkstra(graph, start):
         visited.add(curr_node)
 
         # update the distances to the neighbors of the current node
-        for neighbor, weight in graph[curr_node].items():
+        for neighbor, weight in graphDict[curr_node].items():
             dist = curr_dist + weight
             if dist < distTo[neighbor]:
                 # if a shorter path to the neighbor is found, update its distance and path
@@ -45,10 +52,10 @@ def dijkstra(graph, start):
                 heapq.heappush(pq, (dist, neighbor))
 
     # return the shortest distances and paths to all nodes
-    return distTo, edgeTo, history
+    return distTo, edgeTo, history, historyStr
 
 def get_shortest_path_DJ(graph, start, end):
-    distTo, edgeTo, history = dijkstra(graph, start)
+    distTo, edgeTo, history, historyStr = dijkstra(graph, start)
 
     cost = distTo[end]
     shortestPath = []
@@ -59,7 +66,7 @@ def get_shortest_path_DJ(graph, start, end):
     shortestPath.append(start)
     shortestPath = shortestPath[::-1]
 
-    return cost, shortestPath, distTo, edgeTo, history
+    return cost, shortestPath, distTo, edgeTo, history, historyStr
 
 
 # Example graph from https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/
@@ -81,7 +88,7 @@ def main():
         print(k, v)
     print()
 
-    cost, shortestPath, distTo, edgeTo, history = get_shortest_path_DJ(graph, 'A', 'E')
+    cost, shortestPath, distTo, edgeTo, history, _ = get_shortest_path_DJ(g, 'A', 'E')
     print("start: A end: E")
     print("cost:", cost)
     print("shortestPath:", shortestPath)

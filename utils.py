@@ -89,10 +89,12 @@ class Graph:
         #                 distance_vectors[i][j] = distance_vectors[i][k] + distance_vectors[k][j]
 
         # Apply distance vector graph algorithm
-        dvHistory = []
+        history = []
+        historyStr = []
         changed = True
         while changed:
-            dvHistory.append(pd.DataFrame.from_dict(distance_vectors, orient='index').replace(float('inf'), "∞"))
+            history.append(pd.DataFrame.from_dict(distance_vectors, orient='index').replace(float('inf'), "∞"))
+            historyStr.append("Pass " + str(len(historyStr) + 1))
             changed = False
 
             for tableNode in self.nodes:
@@ -152,7 +154,7 @@ class Graph:
 
         dv = dv.apply(lambda x: pd.Series(x))
 
-        return total_cost, shortest_path, dv, dvHistory
+        return total_cost, shortest_path, dv, history, historyStr
     
 
 def main():
@@ -197,7 +199,7 @@ def main():
         print(k, v)
     print()
 
-    totalCost, shortestPath, dv, history = g.get_shortest_path_DV('A', 'E')
+    totalCost, shortestPath, dv, history, _ = g.get_shortest_path_DV('A', 'E')
     print("start: A end: E")
     print("cost:", totalCost)
     print("shortestPath:", shortestPath)
